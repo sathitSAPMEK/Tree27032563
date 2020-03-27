@@ -51,6 +51,7 @@ RTC_HandleTypeDef hrtc;
 void MX_RTC_Init(void)
 {
 
+
   /**Initialize RTC Only 
   */
   hrtc.Instance = RTC;
@@ -71,8 +72,7 @@ void MX_RTC_Init(void)
 
   /**Initialize RTC and set the Time and Date 
   */
- 
-
+  
 }
 
 void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle)

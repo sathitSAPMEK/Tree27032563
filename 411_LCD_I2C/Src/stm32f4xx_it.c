@@ -216,7 +216,6 @@ void SysTick_Handler(void)
   * @brief This function handles EXTI line[15:10] interrupts.
   */
 
-
 /**
   * @brief This function handles RTC alarms A and B interrupt through EXTI line 17.
   */

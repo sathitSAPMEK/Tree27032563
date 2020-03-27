@@ -589,19 +589,18 @@ HAL_StatusTypeDef HAL_RTC_GetTime(RTC_HandleTypeDef *hrtc, RTC_TimeTypeDef *sTim
   tmpreg = (uint32_t)(hrtc->Instance->TR & RTC_TR_RESERVED_MASK); 
   
   /* Fill the structure fields with the read parameters */
-  sTime->Hours = (uint8_t)((tmpreg & (RTC_TR_HT | RTC_TR_HU)) >> 16U);	
+  sTime->Hours = (uint8_t)((tmpreg & (RTC_TR_HT | RTC_TR_HU)) >> 16U);
   sTime->Minutes = (uint8_t)((tmpreg & (RTC_TR_MNT | RTC_TR_MNU)) >> 8U);
   sTime->Seconds = (uint8_t)(tmpreg & (RTC_TR_ST | RTC_TR_SU));
   sTime->TimeFormat = (uint8_t)((tmpreg & (RTC_TR_PM)) >> 16U); 
- 
+  
   /* Check the input parameters format */
   if(Format == RTC_FORMAT_BIN)
   {
     /* Convert the time structure parameters to Binary format */
     sTime->Hours = (uint8_t)RTC_Bcd2ToByte(sTime->Hours);
     sTime->Minutes = (uint8_t)RTC_Bcd2ToByte(sTime->Minutes);
-    sTime->Seconds = (uint8_t)RTC_Bcd2ToByte(sTime->Seconds); 
-			
+    sTime->Seconds = (uint8_t)RTC_Bcd2ToByte(sTime->Seconds);  
   }
   
   return HAL_OK;
