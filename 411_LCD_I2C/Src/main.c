@@ -68,6 +68,7 @@ long x,in_min,in_max,out_min,out_max;
 bool check = false;
 char strCheck[] = "off pump" ;
 int i = 30;
+int count = 2;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -191,7 +192,7 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc)
   HAL_GPIO_WritePin (GPIOA, GPIO_PIN_5, 1); // turn on the LED 
 }
 long map(long x, long in_min, long in_max, long out_min, long out_max) {
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  return ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)+20;
 }
 
 void EXTI15_10_IRQHandler(void)
@@ -245,9 +246,9 @@ int main(void)
 	if(HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR1) != 0x32F2){ set_time(); }
 	
 //			lcd_send_cmd (0x01);
-			/*lcd_send_cmd(0x80+5);
+			lcd_send_cmd(0x80+5);
 			lcd_send_string("Hello");
-			HAL_Delay(3000); */
+			HAL_Delay(3000); 
 
   /* USER CODE END 2 */
 
@@ -259,23 +260,52 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+/*-------------------------CHECK MODE---------------------*/
+		if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_5)== 0){count++;}
+/*-------------------------READ ADC-----------------------*/		
 		HAL_ADC_Start(&hadc1);
 		adc1 = HAL_ADC_GetValue(&hadc1); //read Soil Moisture
 		long percent = map(adc1,1024,0,0,100);
+/*------------------------A lot of water plants-------------------*/
+		if(count%2==0){
+				
+				lcd_send_cmd (0xc0+11); 
+				lcd_send_string ("H"); 
+				if(percent<40 && check == false && percent>30){
+			
+						HAL_GPIO_WritePin (GPIOA, GPIO_PIN_6, 0); // turn on the Motor Relay = 0 ON 
+						lcd_send_cmd(0x80+8);
+						check = true;
+						lcd_send_string("open pump");
+			
+				}else{
+			
+						HAL_GPIO_WritePin (GPIOA, GPIO_PIN_6, 1); // turn on the Motor Relay = 1 OFF
+						lcd_send_cmd(0x80+8);
+						lcd_send_string("oof pump");
+			} 
+/*------------------------Less water plants-------------------*/						
+		}else if(count%2!=0){
+				
+				lcd_send_cmd (0xc0+11); // send cursor to 0,0 
+				lcd_send_string ("L"); 
+			
+				if(percent<30 && check == false){
+			
+						HAL_GPIO_WritePin (GPIOA, GPIO_PIN_6, 0); // turn on the Motor Relay = 0 ON 
+						lcd_send_cmd(0x80+8);
+						check = true;
+						lcd_send_string("open pump");
+			
+				}else{
+			
+						HAL_GPIO_WritePin (GPIOA, GPIO_PIN_6, 1); // turn on the Motor Relay = 1 OFF
+						lcd_send_cmd(0x80+8);
+						lcd_send_string("oof pump");
+			}
+		}
 		
-		if(percent<40 && check == false){
-			
-				HAL_GPIO_WritePin (GPIOA, GPIO_PIN_6, 0); // turn on the Motor Relay = 0 ON 
-				lcd_send_cmd(0x80+8);
-				 check = true;
-				lcd_send_string("open pump");
-			
-		}else{
-			
-				HAL_GPIO_WritePin (GPIOA, GPIO_PIN_6, 1); // turn on the Motor Relay = 1 OFF
-				lcd_send_cmd(0x80+8);
-				lcd_send_string("oof pump");
-		} 
+		
 			//lcd_send_cmd (0x01);
 			lcd_send_cmd(0xc0+13);
 			lcd_send_string(msg);
